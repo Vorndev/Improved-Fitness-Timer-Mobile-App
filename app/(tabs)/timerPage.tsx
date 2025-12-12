@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
 import { Audio, AVPlaybackStatus } from 'expo-av';
-import Svg, { Circle, Line } from 'react-native-svg';
+import Svg, { Circle, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 
@@ -261,6 +261,13 @@ export default function TimerPage() {
       {/* Timer Circle */}
       <View style={styles.circleContainer}>
         <Svg width={size} height={size}>
+          <Defs>
+            {/* Orange to Red gradient for progress circle */}
+            <LinearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <Stop offset="0%" stopColor="#FF8C00" stopOpacity="1" />
+              <Stop offset="100%" stopColor="#FF0000" stopOpacity="1" />
+            </LinearGradient>
+          </Defs>
           {/* Background circle */}
           <Circle
             cx={size / 2}
@@ -275,7 +282,7 @@ export default function TimerPage() {
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            stroke="#f1a027ff"
+            stroke="url(#progressGradient)"
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
@@ -291,7 +298,7 @@ export default function TimerPage() {
               y1={lineY1}
               x2={lineX2}
               y2={lineY2}
-              stroke="#00b7ffff"
+              stroke="#ffffffff"
               strokeWidth={4}
               strokeLinecap="round"
             />
@@ -431,7 +438,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   startButton: {
-    backgroundColor: '#00b7ff',
+    backgroundColor: '#15a3dbff',
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
