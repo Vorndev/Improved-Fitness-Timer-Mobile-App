@@ -16,12 +16,12 @@ const STORAGE_KEYS = {
 export default function TimerPage() {
   // Timer settings
   const [mainTimerMinutes, setMainTimerMinutes] = useState(1);
-  const [mainTimerSeconds, setMainTimerSeconds] = useState(30);
+  const [mainTimerSeconds, setMainTimerSeconds] = useState(0);
   const [getReadyMinutes, setGetReadyMinutes] = useState(0);
   const [getReadySeconds, setGetReadySeconds] = useState(5);
 
   // Timer state
-  const [timeLeft, setTimeLeft] = useState(90); // in seconds
+  const [timeLeft, setTimeLeft] = useState(60); // in seconds
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +60,13 @@ export default function TimerPage() {
 
     loadTimerValues();
   }, []);
+
+  // Update timeLeft when totalTime changes (but only if timer is not running)
+  useEffect(() => {
+    if (!isRunning) {
+      setTimeLeft(totalTime);
+    }
+  }, [totalTime, isRunning]);
 
   // Note: expo-audio handles audio configuration automatically
 
@@ -311,6 +318,7 @@ export default function TimerPage() {
                 onChangeText={(text) => setMainTimerMinutes(parseInt(text) || 0)}
                 keyboardType="number-pad"
                 maxLength={3}
+                selectTextOnFocus={true}
               />
               <Text style={styles.inputLabel}>min</Text>
               <TextInput
@@ -319,6 +327,7 @@ export default function TimerPage() {
                 onChangeText={(text) => setMainTimerSeconds(Math.min(59, parseInt(text) || 0))}
                 keyboardType="number-pad"
                 maxLength={2}
+                selectTextOnFocus={true}
               />
               <Text style={styles.inputLabel}>sec</Text>
             </View>
@@ -332,6 +341,7 @@ export default function TimerPage() {
                 onChangeText={(text) => setGetReadyMinutes(parseInt(text) || 0)}
                 keyboardType="number-pad"
                 maxLength={3}
+                selectTextOnFocus={true}
               />
               <Text style={styles.inputLabel}>min</Text>
               <TextInput
@@ -340,6 +350,7 @@ export default function TimerPage() {
                 onChangeText={(text) => setGetReadySeconds(Math.min(59, parseInt(text) || 0))}
                 keyboardType="number-pad"
                 maxLength={2}
+                selectTextOnFocus={true}
               />
               <Text style={styles.inputLabel}>sec</Text>
             </View>

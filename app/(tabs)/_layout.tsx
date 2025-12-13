@@ -15,8 +15,11 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
+        // Hide the tab bar to make this a single page app
+        tabBarStyle: { display: 'none' },
       }}>
-      <Tabs.Screen
+      {/* Commented out - hidden tabs */}
+      {/* <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
@@ -29,7 +32,9 @@ export default function TabLayout() {
           title: 'Explore',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
-      />
+      /> */}
+
+      {/* Timer Page - Default and only visible page */}
       <Tabs.Screen
         name="timerPage"
         options={{
