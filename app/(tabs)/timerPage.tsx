@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
-import { Audio, AVPlaybackStatus } from 'expo-av';
+import { useAudioPlayer } from 'expo-audio';
 import Svg, { Circle, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
@@ -34,9 +34,9 @@ export default function TimerPage() {
   const totalTime = mainTimerMinutes * 60 + mainTimerSeconds;
   const getReadyTime = getReadyMinutes * 60 + getReadySeconds;
 
-  // Preload sounds for better Android performance
-  const shortBeepSound = useRef<Audio.Sound | null>(null);
-  const longBeepSound = useRef<Audio.Sound | null>(null);
+  // Audio players for beep sounds
+  const shortBeepPlayer = useAudioPlayer(require('../../assets/sounds/beep.wav'));
+  const longBeepPlayer = useAudioPlayer(require('../../assets/sounds/beep.wav'));
 
   // Load saved timer values on component mount
   useEffect(() => {
@@ -61,45 +61,7 @@ export default function TimerPage() {
     loadTimerValues();
   }, []);
 
-  // Setup audio mode and preload sounds on component mount
-  useEffect(() => {
-    const setupAudio = async () => {
-      try {
-        // Configure audio mode for Android compatibility
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-          shouldDuckAndroid: true,
-          interruptionModeAndroid: 1, // INTERRUPTION_MODE_ANDROID_DO_NOT_MIX
-          playThroughEarpieceAndroid: false,
-        });
-
-        // Preload short beep sound
-        const { sound: shortSound } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/beep.wav'),
-          { shouldPlay: false }
-        );
-        shortBeepSound.current = shortSound;
-
-        // Preload long beep sound
-        const { sound: longSound } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/beep.wav'),
-          { shouldPlay: false }
-        );
-        longBeepSound.current = longSound;
-      } catch (error) {
-        console.warn('Error setting up audio:', error);
-      }
-    };
-
-    setupAudio();
-
-    // Cleanup sounds on unmount
-    return () => {
-      shortBeepSound.current?.unloadAsync();
-      longBeepSound.current?.unloadAsync();
-    };
-  }, []);
+  // Note: expo-audio handles audio configuration automatically
 
   // Timer logic
   useEffect(() => {
@@ -154,45 +116,45 @@ export default function TimerPage() {
     saveTimerValues();
   }, [mainTimerMinutes, mainTimerSeconds, getReadyMinutes, getReadySeconds]);
 
-  // Sound functions
-  const playShortBeep = async () => {
+  // Sound functions using expo-audio
+  const playShortBeep = () => {
     try {
-      if (shortBeepSound.current) {
-        // Reset position to start and play
-        await shortBeepSound.current.setPositionAsync(0);
-        await shortBeepSound.current.playAsync();
-      }
+      shortBeepPlayer.seekTo(0);
+      shortBeepPlayer.play();
     } catch (error) {
       console.warn('Error playing short beep:', error);
     }
   };
 
-  const playLongBeep = async () => {
+  const playLongBeep = () => {
     try {
-      if (!longBeepSound.current) return;
-
       longBeepCountRef.current = 0;
 
-      // Set up listener to replay sound 3 times
-      const onPlaybackStatusUpdate = async (status: AVPlaybackStatus) => {
-        if (status.isLoaded && status.didJustFinish) {
+      const playBeep = () => {
+        longBeepPlayer.seekTo(0);
+        longBeepPlayer.play();
+      };
+
+      // Play first beep
+      playBeep();
+
+      // Set up a listener for when playback finishes
+      const checkFinished = setInterval(() => {
+        if (!longBeepPlayer.playing && longBeepPlayer.currentTime === 0 && longBeepCountRef.current < 3) {
           longBeepCountRef.current += 1;
 
           if (longBeepCountRef.current < 3) {
-            // Play again
-            await longBeepSound.current?.setPositionAsync(0);
-            await longBeepSound.current?.playAsync();
+            playBeep();
           } else {
-            // Done playing, remove listener
-            longBeepSound.current?.setOnPlaybackStatusUpdate(null);
+            clearInterval(checkFinished);
           }
         }
-      };
+      }, 100);
 
-      // Set listener and start playing
-      longBeepSound.current.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-      await longBeepSound.current.setPositionAsync(0);
-      await longBeepSound.current.playAsync();
+      // Cleanup after max time (safety measure)
+      setTimeout(() => {
+        clearInterval(checkFinished);
+      }, 5000);
     } catch (error) {
       console.warn('Error playing long beep:', error);
     }
