@@ -416,7 +416,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 40,
+    marginBottom: 200,
   },
   timerText: {
     position: 'absolute',
@@ -427,9 +427,11 @@ const styles = StyleSheet.create({
   button: {
     width: 280,
     height: 65,
-    borderRadius: 12,
-    marginVertical: 10,
+    borderRadius: 32,
+    marginVertical: 5,
     overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#2e2e2eff',
   },
   editButton: {
     backgroundColor: '#333333ff',
@@ -502,15 +504,17 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     height: 45,
-    borderRadius: 8,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 5,
+    borderWidth: 3,
+    borderColor: '#2e2e2eff',
   },
   cancelButton: {
-    backgroundColor: '#666666',
+    backgroundColor: '#333333ff',
   },
   saveButton: {
-    backgroundColor: '#00FF00',
+    backgroundColor: '#15a3dbff',
   },
 });
