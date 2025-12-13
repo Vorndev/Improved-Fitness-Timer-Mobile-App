@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Modal, TextInput } from 'react-native';
-import { useAudioPlayer } from 'expo-audio';
+import { useAudioPlayer, setAudioModeAsync, AudioMode } from 'expo-audio';
 import Svg, { Circle, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
@@ -41,10 +41,18 @@ export default function TimerPage() {
   const getReadyPlayer = useAudioPlayer(require('../../assets/sounds/getReadyTimer.wav'));
   const timerDingPlayer = useAudioPlayer(require('../../assets/sounds/timerDing.wav'));
 
-  // Load saved timer values on component mount
+  // Configure audio mode and load saved timer values on component mount
   useEffect(() => {
-    const loadTimerValues = async () => {
+    const setupAudioAndLoadValues = async () => {
       try {
+        // Configure audio to mix with other apps (like Spotify)
+        // This allows timer sounds to play over music without stopping it
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldRouteThroughEarpiece: false,
+        });
+
+        // Load saved timer values
         const [savedMainMinutes, savedMainSeconds, savedGetReadyMinutes, savedGetReadySeconds] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEYS.MAIN_TIMER_MINUTES),
           AsyncStorage.getItem(STORAGE_KEYS.MAIN_TIMER_SECONDS),
@@ -57,11 +65,11 @@ export default function TimerPage() {
         if (savedGetReadyMinutes !== null) setGetReadyMinutes(parseInt(savedGetReadyMinutes));
         if (savedGetReadySeconds !== null) setGetReadySeconds(parseInt(savedGetReadySeconds));
       } catch (error) {
-        console.warn('Error loading timer values:', error);
+        console.warn('Error setting up audio or loading timer values:', error);
       }
     };
 
-    loadTimerValues();
+    setupAudioAndLoadValues();
   }, []);
 
   // Update timeLeft when totalTime changes (but only if timer is not running)
