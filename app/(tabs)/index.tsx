@@ -45,11 +45,13 @@ export default function TimerPage() {
   useEffect(() => {
     const setupAudioAndLoadValues = async () => {
       try {
-        // Configure audio to mix with other apps (like Spotify)
-        // This allows timer sounds to play over music without stopping it
+        // Configure audio to duck other apps' audio (like Spotify)
+        // This lowers other apps' volume while timer sounds play, then restores it
         await setAudioModeAsync({
           playsInSilentMode: true,
           shouldRouteThroughEarpiece: false,
+          interruptionMode: 'duckOthers',      // iOS: duck other apps' audio
+          interruptionModeAndroid: 'duckOthers', // Android: duck other apps' audio
         });
 
         // Load saved timer values
